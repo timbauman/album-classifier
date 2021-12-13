@@ -7,6 +7,7 @@ import pandas as pd
 import click
 import time
 
+RANDOM_SEED = 12345  # not random at all. we want the sampling to be deterministic
 
 # helper
 def tell_us_youre_running(func):
@@ -152,7 +153,11 @@ def get_album_genres(num_genres):
 
 @tell_us_youre_running
 def sample_album_genres(album_genres, num_samples):
-    return album_genres.sample(num_samples) if num_samples is not None else album_genres
+    return (
+        album_genres.sample(n=num_samples, random_state=RANDOM_SEED)
+        if num_samples is not None
+        else album_genres
+    )
 
 
 @tell_us_youre_running
@@ -186,7 +191,7 @@ def train_learner(learner, model_filename, num_epochs):
 
 @tell_us_youre_running
 def test_learner(learner, album_genres):
-    foo = album_genres.sample(30)
+    foo = album_genres.sample(n=30)
     foo["result"] = foo["description"].map(learner.predict)
     print(foo)
 
