@@ -50,7 +50,7 @@ def get_top_album_genres(num_genres):
 def sample_album_genres(album_genres, num_samples):
     return (
         album_genres.sample(n=num_samples, random_state=RANDOM_SEED)
-        if num_samples is not None
+        if num_samples > 0
         else album_genres
     )
 
@@ -80,7 +80,7 @@ def build_learner(album_genres):
 
 @tell_us_youre_running
 def train_learner(learner, model_filename, num_epochs):
-    learner.fine_tune(num_epochs, lr=2e-3)
+    learner.fine_tune(num_epochs, base_lr=2e-3)
     learner.export(model_filename)
 
 
