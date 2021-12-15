@@ -4,6 +4,8 @@
 
 import pandas as pd
 import click
+from pathlib import Path
+
 
 from utils import tell_us_youre_running, tell_us_return_size
 
@@ -15,7 +17,7 @@ def get_release_group_tags(mbdump_path):
     header_list = ["release_group_id", "tag_id", "upvotes", "updated_at"]
 
     release_group_tags = pd.read_csv(
-        f"{mbdump_path}/release_group_tag", sep="\t", names=header_list
+        mbdump_path / "release_group_tag", sep="\t", names=header_list
     )
     return release_group_tags.merge(
         genres, left_on="tag_id", right_on="id", suffixes=("_release_group", "_genre")
@@ -27,7 +29,7 @@ def get_release_group_tags(mbdump_path):
 def get_release_groups(mbdump_path):
     header_list = ["id", "mbid", "name", "artist_id", "a", "b", "c", "updated_at"]
 
-    return pd.read_csv(f"{mbdump_path}/release_group", sep="\t", names=header_list)
+    return pd.read_csv(mbdump_path / "release_group", sep="\t", names=header_list)
 
 
 @tell_us_youre_running
@@ -35,7 +37,7 @@ def get_release_groups(mbdump_path):
 def get_tags(mbdump_path):
     header_list = ["id", "name", "ref_count"]
 
-    return pd.read_csv(f"{mbdump_path}/tag", sep="\t", names=header_list)
+    return pd.read_csv(mbdump_path / "tag", sep="\t", names=header_list)
 
 
 @tell_us_youre_running
@@ -44,7 +46,7 @@ def get_genres(mbdump_path):
     tags = get_tags(mbdump_path)
     header_list = ["id", "mbid", "name", "a", "b", "updated_at"]
 
-    genre_names = pd.read_csv(f"{mbdump_path}/genre", sep="\t", names=header_list)
+    genre_names = pd.read_csv(mbdump_path / "genre", sep="\t", names=header_list)
 
     return tags[tags["name"].isin(genre_names["name"])]
 
@@ -75,7 +77,7 @@ def get_artists(mbdump_path):
     ]
 
     artists = pd.read_csv(
-        f"{mbdump_path}/artist",
+        mbdump_path / "artist",
         sep="\t",
         names=header_list,
         dtype={"disambiguation": str},
@@ -120,8 +122,9 @@ def get_album_genres(mbdump_path):
 @click.command()
 @click.argument("mbdump_path", type=click.Path(exists=True, file_okay=False))
 def simplify_mbdump(mbdump_path):
+    mbdump_path = Path(mbdump_path)
     album_genres = get_album_genres(mbdump_path)
-    album_genres.to_csv(f"{mbdump_path}/album_genres.csv")
+    album_genres.to_csv(mbdump_path / "album_genres.csv")
     print("Saved")
 
 

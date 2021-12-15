@@ -3,6 +3,7 @@
 
 import pandas as pd
 import click
+from pathlib import Path
 
 from fastai.text.all import *
 
@@ -32,8 +33,8 @@ def find_least_common_genre(tags, genres):
 
 
 @tell_us_youre_running
-def get_top_album_genres(num_genres, multi_category):
-    album_genres = pd.read_csv("/Users/timothybauman/mbdump/album_genres.csv")
+def get_top_album_genres(num_genres, multi_category, mbdump_path):
+    album_genres = pd.read_csv(mbdump_path / "album_genres.csv")
     top_tags = get_top_tags(album_genres, num_genres)
     filtered_album_genres = album_genres[album_genres["genre"].isin(top_tags.index)]
     filtered_album_genres_set = filtered_album_genres.groupby(
@@ -112,13 +113,21 @@ def train_album_name_classifier_impl(
 @click.option("--num_epochs", default=4)
 @click.option("--base_lr", default=2e-3)  # use find_lr to find appropriate numbers
 @click.option("--multi-category/--single-category", default=True)
+@click.argument("mbdump_path", type=click.Path(exists=True, file_okay=False))
 @click.argument(
     "model_filename", type=click.STRING
 )  # not using a path because it's a relative path
 def train_album_name_classifier(
-    num_genres, num_samples, num_epochs, base_lr, multi_category, model_filename
+    num_genres,
+    num_samples,
+    num_epochs,
+    base_lr,
+    multi_category,
+    mbdump_path,
+    model_filename,
 ):
-    album_genres = get_top_album_genres(num_genres, multi_category)
+    mbdump_path = Path(mbdump_path)
+    album_genres = get_top_album_genres(num_genres, multi_category, mbdump_path)
     learner = train_album_name_classifier_impl(
         album_genres, num_samples, num_epochs, multi_category, model_filename, base_lr
     )
